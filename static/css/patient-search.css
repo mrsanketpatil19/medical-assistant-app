@@ -1,0 +1,197 @@
+/* Patient Similarity Search Styles */
+.similar-patients-search {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Ensure the button text is always light */
+.similar-patients-search button,
+.similar-patients-search .btn,
+#findSimilarBtn,
+#findSimilarBtn i {
+    color: #ffffff !important;
+    text-shadow: 0 0 1px rgba(0,0,0,0.3);
+}
+
+#findSimilarBtn,
+#findSimilarBtn.btn,
+#findSimilarBtn.btn.btn-primary,
+.similar-patients-search .btn,
+.similar-patients-search .btn.btn-primary,
+.similar-patients-search #findSimilarBtn {
+    white-space: nowrap;
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    border-radius: 4px !important;
+    cursor: pointer;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+}
+
+#findSimilarBtn:hover,
+#findSimilarBtn.btn:hover,
+#findSimilarBtn.btn.btn-primary:hover,
+.similar-patients-search .btn:hover,
+.similar-patients-search .btn.btn-primary:hover,
+.similar-patients-search #findSimilarBtn:hover {
+    background: var(--accent-secondary) !important;
+    color: #000000 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.close-modal {
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-light);
+    opacity: 0.8;
+}
+
+.close-modal:hover {
+    color: var(--accent-secondary);
+    opacity: 1;
+}
+
+/* Patient Details */
+.query-patient {
+    background-color: var(--dark);
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.query-patient h4 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.patient-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.patient-detail {
+    margin-bottom: 8px;
+}
+
+.patient-detail label {
+    font-weight: 500;
+    color: var(--text-light);
+    opacity: 0.8;
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.9rem;
+}
+
+.patient-detail span {
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+/* Similar Patients List */
+.patients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.patient-card {
+    background-color: var(--dark);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    color: var(--text-light);
+}
+
+.patient-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.similarity-score {
+    display: inline-block;
+    background-color: rgba(79, 195, 247, 0.2);
+    color: var(--primary-color);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.patient-card h4 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.patient-card .patient-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.patient-card .info-item {
+    margin-bottom: 5px;
+}
+
+.patient-card .info-label {
+    font-weight: 500;
+    color: var(--text-light);
+    opacity: 0.8;
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+}
+
+.patient-card .info-value {
+    color: var(--text-light);
+    word-break: break-word;
+    font-size: 0.95rem;
+}

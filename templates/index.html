@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/patient-search.css') }}">
+</head>
+<body>
+    <!-- Background will be added here by medical-background.js -->
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Chat Icon -->
+        <div class="chat-icon" id="chatIcon">
+            <i class="fas fa-comment-medical"></i>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-header">
+                <h3>Medical Assistant</h3>
+                <div class="chat-header-controls">
+                    <button class="clear-btn" id="clearChat" title="Clear Chat"><i class="fas fa-eraser"></i></button>
+                    <button class="close-btn" id="closeChat" title="Close Chat"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <p>Hello! I'm your medical assistant. Please enter a patient ID and ask me anything about their records.</p>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="patientId" placeholder="Enter Patient ID (e.g., patient-0001)" required>
+                <input type="text" id="userInput" placeholder="Type your question here...">
+                <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- Provider Dashboard -->
+        <div class="dashboard-layout">
+            <div class="dashboard-container">
+                <header class="dashboard-header">
+                    <h1 class="dashboard-title">Provider Dashboard</h1>
+                </header>
+                
+                <div class="controls">
+                    <select id="providerDropdown" class="form-control">
+                        <option value="">Select a provider...</option>
+                    </select>
+                    <select id="statusFilter" class="form-control">
+                        <option value="all">All Statuses</option>
+                        <!-- Status options will be populated by JavaScript -->
+                    </select>
+                    <input type="text" id="patientIdFilter" class="form-control" placeholder="Search by Patient ID">
+                    <div class="similar-patients-search">
+                        <input type="text" id="similarPatientSearch" class="form-control" placeholder="Find similar patients...">
+                        <button id="findSimilarBtn" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Find Similar
+                        </button>
+                    </div>
+                    <button id="sortDate" class="btn" data-sort="asc">
+                        <i class="fas fa-sort-amount-down"></i> Sort by Date
+                    </button>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="table-responsive">
+                        <table id="patientsTable" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Name</th>
+                                    <th>Visit Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patientsTableBody">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">Status Distribution</h2>
+                            <i class="fas fa-chart-pie" style="color: var(--primary); font-size: 1.5rem;"></i>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="statusPieChart"></canvas>
+                        </div>
+                        <div class="chart-legend" id="chartLegend">
+                            <!-- Legend items will be added by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Similar Patients Modal -->
+    <div id="similarPatientsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Similar Patients</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="queryPatientInfo" class="query-patient">
+                    <h4>Query Patient:</h4>
+                    <div id="queryPatientDetails" class="patient-details"></div>
+                </div>
+                <div class="similar-patients-list">
+                    <h4>Similar Patients (by Clinical Profile):</h4>
+                    <div id="similarPatientsList" class="patients-grid">
+                        <!-- Similar patients will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/medical-background.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script>
+        // Patient Similarity Search
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('similarPatientsModal');
+            const closeBtn = document.querySelector('.close-modal');
+            const findSimilarBtn = document.getElementById('findSimilarBtn');
+            const similarPatientSearch = document.getElementById('similarPatientSearch');
+            
+            // Open modal when clicking Find Similar button
+            findSimilarBtn.addEventListener('click', function() {
+                const patientId = similarPatientSearch.value.trim();
+                if (!patientId) {
+                    alert('Please enter a patient ID');
+                    return;
+                }
+                
+                // Show loading state
+                const similarPatientsList = document.getElementById('similarPatientsList');
+                similarPatientsList.innerHTML = '<p>Loading similar patients...</p>';
+                
+                // Fetch similar patients
+                fetch(`/api/similar-patients/${patientId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            displaySimilarPatients(data);
+                        } else {
+                            throw new Error(data.message || 'Error finding similar patients');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        similarPatientsList.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                    });
+                
+                modal.style.display = 'block';
+            });
+            
+            // Close modal when clicking the X
+            closeBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside the modal content
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Function to display similar patients
+            function displaySimilarPatients(data) {
+                const queryPatientDetails = document.getElementById('queryPatientDetails');
+                const similarPatientsList = document.getElementById('similarPatientsList');
+                
+                // Display query patient details
+                queryPatientDetails.innerHTML = formatPatientDetails(data.query_patient);
+                
+                // Display similar patients
+                if (data.similar_patients && data.similar_patients.length > 0) {
+                    similarPatientsList.innerHTML = data.similar_patients
+                        .map(patient => createPatientCard(patient))
+                        .join('');
+                } else {
+                    similarPatientsList.innerHTML = '<p>No similar patients found.</p>';
+                }
+            }
+            
+            // Format patient details as HTML
+            function formatPatientDetails(patient) {
+                if (!patient) return '';
+                
+                // Define which fields to display
+                const fieldsToShow = [
+                    'PatientID', 'Name', 'Gender', 'BirthDate', 'Status_x',
+                    'Medication', 'Dosage', 'ConditionCode', 'ClinicalStatus'
+                ];
+                
+                return fieldsToShow
+                    .filter(field => patient[field] !== undefined && patient[field] !== null && patient[field] !== '')
+                    .map(field => `
+                        <div class="patient-detail">
+                            <label>${formatFieldName(field)}:</label>
+                            <span>${formatFieldValue(field, patient[field])}</span>
+                        </div>
+                    `)
+                    .join('');
+            }
+            
+            // Format field names for display
+            function formatFieldName(field) {
+                const names = {
+                    'PatientID': 'Patient ID',
+                    'Status_x': 'Status',
+                    'BirthDate': 'Date of Birth',
+                    'ConditionCode': 'Condition',
+                    'ClinicalStatus': 'Clinical Status'
+                };
+                return names[field] || field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+            }
+            
+            // Format field values for display
+            function formatFieldValue(field, value) {
+                if (field === 'BirthDate' && value) {
+                    return new Date(value).toLocaleDateString();
+                }
+                return value || 'N/A';
+            }
+            
+            // Create a patient card HTML
+            function createPatientCard(patient) {
+                const similarityPercent = Math.round((patient.similarity_score || 0) * 100);
+                
+                return `
+                    <div class="patient-card">
+                        <div class="similarity-score">
+                            Similarity: ${similarityPercent}%
+                        </div>
+                        <h4>${patient.Name || 'Unknown Patient'}</h4>
+                        <div class="patient-info">
+                            <div class="info-item">
+                                <span class="info-label">Patient ID:</span>
+                                <span class="info-value">${patient.PatientID || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Gender:</span>
+                                <span class="info-value">${patient.Gender || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Status:</span>
+                                <span class="info-value">${patient.Status_x || 'N/A'}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Condition:</span>
+                                <span class="info-value">${patient.ConditionCode || 'N/A'}</span>
+                            </div>
+                            ${patient.Medication ? `
+                                <div class="info-item">
+                                    <span class="info-label">Medication:</span>
+                                    <span class="info-value">${patient.Medication} ${patient.Dosage ? `(${patient.Dosage})` : ''}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    </script>
+    
+    <script>
+        // Initialize chat functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Chat initialization code here
+        });
+    </script>
+</body>
+</html>
